@@ -1,0 +1,136 @@
+<!doctype html> 
+
+<html lang="en">
+<script src="https://d3js.org/d3.v5.js"></script>
+<script src="https://d3js.org/d3-axis.v1.min.js"></script>
+<head>
+  <meta charset="utf-8">
+<input type="file" id="fileInput">
+<div>
+	<title>The HTML5 Herald</title>
+  <meta name="description" content="The HTML5 Herald">
+  <meta name="author" content="SitePoint">
+</div>
+
+<svg width=500px height=500px>
+
+</svg>
+
+
+</head>
+
+
+<body>
+  <script>
+	var fileString = null;
+	document.getElementById('fileInput').addEventListener('change', function selectFileChange(){
+		const reader = new FileReader();
+		reader.onload = function fileReadCompleted(e) {
+			//Proccessing the string into a map
+			fileString = reader.result
+			console.log(fileString);
+			let words = fileString.split(/\ +/);
+			console.log(words);
+			let map = new Map();
+			for(let i = 0; i < words.length - 1; i++){
+				if(map.get(words[i]+" "+words[i +1])){
+					let updateValues = map.get(words[i]+" "+words[i +1]) + 1;
+					map.set(words[i]+" "+words[i + 1], updateValues);
+				}else{
+					map.set(words[i]+" "+words[i + 1], 1);
+
+				}
+			}
+			let tupleArray = [];
+			map.forEach((key, value) => {
+				tupleArray.push([value, key]);
+			});
+			console.log(tupleArray.length);
+			tupleArray.sort(function(a, b){
+				return a[1] > b[1] ? -1 : 1;
+			});
+		
+			//after we have it in a map we can start to put it into a histogram
+			d3.selectAll('text')
+				.remove()
+			d3.selectAll('rect')
+				.remove()
+			d3.selectAll('line')
+				.remove()
+
+			d3.select('svg')
+				.attr("height", tupleArray.length * 30 + 20)
+				.attr('width', tupleArray[0][1] * 50 + 205)
+				.selectAll('rect')
+				.data(tupleArray)
+				.enter()
+				.append('g')
+				.append('rect')
+				.attr('x', function(d,i){
+					return 205;
+				})
+				.attr('y', function(d, i){
+					console.log(d[1])
+					return (i * 2) * 15 + 20 ;
+				})
+				.attr('width', function(d,i){
+					return d[1] * 50
+				})
+				.attr('height', 25)
+				.attr('fill', 'blue')
+
+			d3.selectAll('svg')
+				.selectAll('text')
+				.data(tupleArray)
+				.enter()
+				.append('text')
+					.attr('x', 200)
+					.attr('y', function(d, i){
+						return i * 30 + (25/2) + 20 ;
+					})
+					.text(function(d){
+						return d[0];
+					})
+					.attr('font-size', 10)
+					.attr('fill', 'black')
+					.attr('backgroundColor', 'blue')
+					.attr('text-anchor', 'end')
+			
+			d3.select('svg')
+				.append('line')
+				.attr('x1', 205)
+				.attr('x2', 205 + ( 1 + tupleArray[0][1] * 50))
+				.attr('y1', 20)
+				.attr('y2', 20)
+				.style('stroke', 'black')
+				.style('stroke-width', 2)
+
+			for(let i = 0; i < tupleArray[0][1]; i++){
+				d3.select('svg')
+					.append('line')
+					.attr('x1', 206 + i * 50)
+					.attr('y1', 10)
+					.attr('x2', 206 + i * 50)
+					.attr('y2', 20)
+					.style('stroke', 'black')
+					.style('stroke-width', 1)
+				d3.select('svg')
+					.append('text')
+					.attr('x', 204 + i * 50)
+					.attr('y', 8)
+					.text(i)
+					.attr('font-size', 10)
+					.attr('fill', 'black')
+					.attr('backgroundColor', 'blue')
+					.attr('text-anchor', 'center')
+			
+
+				
+			}
+		}
+			reader.readAsText(this.files[0]);
+	});
+
+  </script>
+</body>
+</html>
